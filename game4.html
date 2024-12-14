@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess Me! - Object Guessing Game</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #f0f8ff;
+            color: #333;
+            text-align: center;
+            padding: 50px;
+        }
+        h1 {
+            color: #ff6347;
+        }
+        .container {
+            background-color: #fff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            width: 300px;
+            margin: auto;
+        }
+        input[type="text"] {
+            padding: 10px;
+            font-size: 1.2em;
+            width: 80%;
+            margin: 10px 0;
+            border: 2px solid #ddd;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .hint {
+            font-size: 1.2em;
+            margin-top: 20px;
+            color: #555;
+        }
+        .message {
+            font-size: 1.2em;
+            margin-top: 20px;
+        }
+        .correct {
+            color: green;
+        }
+        .wrong {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <h1>Guess Me! - Object Guessing Game</h1>
+    <div class="container">
+        <p>Can you guess the everyday object?</p>
+        <input type="text" id="guess" placeholder="Enter your guess">
+        <button onclick="checkGuess()">Guess!</button>
+        <p id="feedback" class="message"></p>
+        <p id="hint" class="hint"></p>
+    </div>
+
+    <script>
+        // Define multiple objects with their names and hints
+        const objects = [
+            {
+                name: 'Coffee Mug',
+                hints: [
+                    "I am usually found in the kitchen.",
+                    "I hold a liquid, often hot.",
+                    "I have a handle.",
+                    "People drink from me every morning."
+                ]
+            },
+            {
+                name: 'Laptop',
+                hints: [
+                    "I have a screen and a keyboard.",
+                    "You use me for work or entertainment.",
+                    "I can be carried around easily.",
+                    "I need a charger to stay powered."
+                ]
+            },
+            {
+                name: 'Television',
+                hints: [
+                    "I am usually found in the living room.",
+                    "You watch movies and shows on me.",
+                    "I have a large screen.",
+                    "You need a remote to control me."
+                ]
+            },
+            {
+                name: 'Refrigerator',
+                hints: [
+                    "I keep food cold.",
+                    "You can store fruits, vegetables, and dairy in me.",
+                    "I make a humming sound.",
+                    "I have a freezer section."
+                ]
+            },
+            {
+                name: 'Pen',
+                hints: [
+                    "I am used to write.",
+                    "I have ink inside me.",
+                    "You hold me in your hand.",
+                    "You can click me to use or retract."
+                ]
+            }
+        ];
+
+        // Randomly select an object
+        const selectedObject = objects[Math.floor(Math.random() * objects.length)];
+
+        let hintIndex = 0;
+        let attempts = 0;
+
+        // Function to show the next hint
+        function nextHint() {
+            if (hintIndex < selectedObject.hints.length) {
+                document.getElementById('hint').textContent = selectedObject.hints[hintIndex];
+                hintIndex++;
+            } else {
+                document.getElementById('hint').textContent = "No more hints! Keep guessing!";
+            }
+        }
+
+        // Function to check the player's guess
+        function checkGuess() {
+            const guess = document.getElementById('guess').value.trim().toLowerCase();
+            const feedback = document.getElementById('feedback');
+
+            attempts++;
+
+            if (guess === selectedObject.name.toLowerCase()) {
+                feedback.textContent = `Correct! You guessed it in ${attempts} attempt(s)!`;
+                feedback.classList.add('correct');
+                feedback.classList.remove('wrong');
+            } else {
+                feedback.textContent = "Wrong! Try again!";
+                feedback.classList.add('wrong');
+                feedback.classList.remove('correct');
+
+                // Show the next hint after 2 wrong attempts
+                if (attempts % 2 === 0) {
+                    nextHint();
+                }
+            }
+
+            document.getElementById('guess').value = '';  // Clear the input
+            document.getElementById('guess').focus();     // Focus back to the input field
+        }
+
+        // Start with the first hint
+        nextHint();
+    </script>
+</body>
+</html>
