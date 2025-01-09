@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connect Four</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+        }
+        .game-container {
+            text-align: center;
+        }
+        .title {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        .board {
+            display: grid;
+            grid-template-columns: repeat(7, 60px);
+            gap: 5px;
+            background-color: #34495e;
+            padding: 5px;
+            border-radius: 10px;
+        }
+        .cell {
+            width: 60px;
+            height: 60px;
+            background-color: #ecf0f1;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            cursor: pointer;
+        }
+        .cell.red {
+            background-color: #e74c3c;
+        }
+        .cell.yellow {
+            background-color: #f1c40f;
+        }
+        .status {
+            margin-top: 1rem;
+            font-size: 1.2rem;
+            color: #555;
+        }
+        .reset {
+            margin-top: 1rem;
+            padding: 10px 20px;
+            font-size: 1rem;
+            border: none;
+            background-color: #2980b9;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .reset:hover {
+            background-color: #1f6391;
+        }
+    </style>
+</head>
+<body>
+    <div class="game-container">
+        <div class="title">Connect Four</div>
+        <div class="board" id="board"></div>
+        <div class="status" id="status">Player Red's turn</div>
+        <button class="reset" id="reset">Restart Game</button>
+    </div>
+
+    <script>
+        const board = document.getElementById('board');
+        const status = document.getElementById('status');
+        const resetButton = document.getElementById('reset');
+
+        const rows = 6;
+        const columns = 7;
+        let currentPlayer = 'red';
+        let gameActive = true;
+        let gameState = Array(rows).fill(null).map(() => Array(columns).fill(null));
+
+        function createBoard() {
+            board.innerHTML = '';
+            for (let row = 0; row < rows; row++) {
+                for (let col = 0; col < columns; col++) {
+                    const cell = document.createElement('div');
+                    cell.classList.add('cell');
+                    cell.setAttribute('data-row', row);
+                    cell.setAttribute('data-col', col);
+                    cell.addEventListener('click', handleCellClick);
+                    board.appendChild(cell);
+                }
+            }
+        }
+
+        function handleCellClick(e) {
+            if (!gameActive) return;
+
+            const col = parseInt(e.target.getAttribute('data-col'));
+            let rowToFill = -1;
+
+            for (let row = rows - 1; row >= 0; row--) {
+                if (!gameState[row][col]) {
+                    rowToFill = row;
+                    break;
+                }
+            }
+
+            if (rowToFill === -1) return;
+
+            gameState[rowToFill][col] = currentPlayer;
+            const cell = board.querySelector(
+                `.cell[data-row='${rowToFill}'][data-col='${col}']`
+            );
+            cell.classList.add(currentPlayer);
+
+            const winner = checkWinner(rowToFill, col);
+            if (winner) {
+                status.textContent = `Player ${winner.charAt(0).toUpperCase() + winner.slice(1)} wins!`;
+                gameActive = false;
+            } else if (gameState.flat().every(cell => cell !== null)) {
+                status.textContent = "It's a draw!";
+                gameActive = false;
+            } else {
+                currentPlayer = currentPlayer === 'red' ? 'yellow' : 'red';
+                status.textContent = `Player ${currentPlayer.charAt(0).toUpperCase() + currentPlayer.slice(1)}'s turn`;
+            }
+        }
+
+        function checkWinner(row, col) {
+            const directions = [
+                { dr: 0, dc: 1 }, // Horizontal
+                { dr: 1, dc: 0 }, // Vertical
+                { dr: 1, dc: 1 }, // Diagonal (bottom-right)
+                { dr: 1, dc: -1 } // Diagonal (bottom-left)
+            ];
+
+            for (const { dr, dc } of directions) {
+                let count = 1;
+
+                for (let step = 1; step < 4; step++) {
+                    const r = row + dr * step;
+                    const c = col + dc * step;
+                    if (r >= 0 && r < rows && c >= 0 && c < columns && gameState[r][c] === currentPlayer) {
+                        count++;
+                    } else {
+                        break;
+                    }
+                }
+
+                for (let step = 1; step < 4; step++) {
+                    const r = row - dr * step;
+                    const c = col - dc * step;
+                    if (r >= 0 && r < rows && c >= 0 && c < columns && gameState[r][c] === currentPlayer) {
+                        count++;
+                    } else {
+                        break;
+                    }
+                }
+
+                if (count >= 4) return currentPlayer;
+            }
+
+            return null;
+        }
+
+        function resetGame() {
+            gameState = Array(rows).fill(null).map(() => Array(columns).fill(null));
+            currentPlayer = 'red';
+            gameActive = true;
+            status.textContent = "Player Red's turn";
+            createBoard();
+        }
+
+        resetButton.addEventListener('click', resetGame);
+        createBoard();
+    </script>
+</body>
+</html>
