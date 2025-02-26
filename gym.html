@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gym Timer</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #222;
+            color: #fff;
+        }
+        .container {
+            margin-top: 50px;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 10px;
+            font-size: 18px;
+            cursor: pointer;
+        }
+        #timer {
+            font-size: 48px;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Gym Timer</h1>
+        <p id="status">Press Start to Begin</p>
+        <button id="start">Start</button>
+        <button id="stop">Stop</button>
+        <p id="timer">00:00</p>
+    </div>
+
+    <script>
+        let timer;
+        let timeLeft;
+        let phase = "work"; // "work", "shortBreak", "longBreak"
+        let setCount = 0;
+        let isRunning = false;
+
+        const startBtn = document.getElementById("start");
+        const stopBtn = document.getElementById("stop");
+        const statusText = document.getElementById("status");
+        const timerDisplay = document.getElementById("timer");
+
+        const beep = (times) => {
+            for (let i = 0; i < times; i++) {
+                setTimeout(() => {
+                    let audio = new Audio("https://www.soundjay.com/button/beep-07.wav");
+                    audio.play();
+                }, i * 1000);
+            }
+        };
+
+        const startTimer = (duration, nextPhase) => {
+            timeLeft = duration;
+            clearInterval(timer);
+
+            timer = setInterval(() => {
+                let minutes = Math.floor(timeLeft / 60);
+                let seconds = timeLeft % 60;
+                timerDisplay.innerText = `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+
+                if (timeLeft === 2 && phase === "work") beep(1);
+                if (timeLeft === 0) {
+                    clearInterval(timer);
+
+                    if (phase === "work") {
+                        phase = "shortBreak";
+                        beep(2);
+                        startTimer(20, "work"); // 20s break
+                    } else if (phase === "shortBreak") {
+                        setCount++;
+                        if (setCount >= 3) {
+                            phase = "longBreak";
+                            beep(3);
+                            startTimer(10, "work"); // Long break (including last 20s break)
+                            setCount = 0;
+                        } else {
+                            phase = "work";
+                            startTimer(45, "shortBreak"); // 45s work again
+                        }
+                    } else if (phase === "longBreak") {
+                        phase = "work";
+                        startTimer(45, "shortBreak");
+                    }
+                }
+
+                timeLeft--;
+            }, 1000);
+        };
+
+        startBtn.addEventListener("click", () => {
+            if (!isRunning) {
+                isRunning = true;
+                phase = "work";
+                statusText.innerText = "Workout Started!";
+                startTimer(45, "shortBreak");
+            }
+        });
+
+        stopBtn.addEventListener("click", () => {
+            clearInterval(timer);
+            isRunning = false;
+            statusText.innerText = "Timer Stopped";
+            timerDisplay.innerText = "00:00";
+        });
+    </script>
+</body>
+</html>
